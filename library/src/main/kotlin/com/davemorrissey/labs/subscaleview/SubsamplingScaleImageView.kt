@@ -725,7 +725,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                 reset()
                 postScale(xScale, yScale)
                 postRotate(getRequiredRotation().toFloat())
-                postTranslate(vTranslate!!.x, vTranslate!!.y)
+
+                if (vTranslate != null) {
+                    postTranslate(vTranslate!!.x, vTranslate!!.y)
+                }
 
                 when (getRequiredRotation()) {
                     ORIENTATION_90 -> postTranslate(scale * sHeight, 0f)
