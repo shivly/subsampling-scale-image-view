@@ -250,7 +250,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
     private fun setGestureDetector(context: Context) {
         detector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-                if (isReady && vTranslate != null && e1 != null && e2 != null && (Math.abs(e1.x - e2.x) > 50 || Math.abs(e1.y - e2.y) > 50) && (Math.abs(velocityX) > 500 || Math.abs(velocityY) > 500) && !isZooming) {
+                if (isReady && vTranslate != null && !isZooming && e1 != null && e2 != null && (Math.abs(e1.x - e2.x) > 50 || Math.abs(e1.y - e2.y) > 50) && (Math.abs(velocityX) > 500 || Math.abs(velocityY) > 500)) {
                     val vX = (velocityX * cos - velocityY * -sin).toFloat()
                     val vY = (velocityX * -sin + velocityY * cos).toFloat()
 
@@ -316,6 +316,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         val parentHeight = MeasureSpec.getSize(heightMeasureSpec)
         val resizeWidth = widthSpecMode != MeasureSpec.EXACTLY
         val resizeHeight = heightSpecMode != MeasureSpec.EXACTLY
+
         var width = parentWidth
         var height = parentHeight
         if (sWidth > 0 && sHeight > 0) {
@@ -925,10 +926,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         }
 
         val corners = arrayOf(
-                sourceToViewCoord(tile.sRect!!.left.toFloat(), tile.sRect!!.top.toFloat()),
-                sourceToViewCoord(tile.sRect!!.right.toFloat(), tile.sRect!!.top.toFloat()),
-                sourceToViewCoord(tile.sRect!!.right.toFloat(), tile.sRect!!.bottom.toFloat()),
-                sourceToViewCoord(tile.sRect!!.left.toFloat(), tile.sRect!!.bottom.toFloat()))
+            sourceToViewCoord(tile.sRect!!.left.toFloat(), tile.sRect!!.top.toFloat()),
+            sourceToViewCoord(tile.sRect!!.right.toFloat(), tile.sRect!!.top.toFloat()),
+            sourceToViewCoord(tile.sRect!!.right.toFloat(), tile.sRect!!.bottom.toFloat()),
+            sourceToViewCoord(tile.sRect!!.left.toFloat(), tile.sRect!!.bottom.toFloat()))
 
         for (pointF in corners) {
             if (pointF == null) {
@@ -1140,10 +1141,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                     tile.sampleSize = sampleSize
                     tile.visible = sampleSize == fullImageSampleSize
                     tile.sRect = Rect(
-                            x * sTileWidth,
-                            y * sTileHeight,
-                            if (x == xTiles - 1) sWidth() else (x + 1) * sTileWidth,
-                            if (y == yTiles - 1) sHeight() else (y + 1) * sTileHeight)
+                        x * sTileWidth,
+                        y * sTileHeight,
+                        if (x == xTiles - 1) sWidth() else (x + 1) * sTileWidth,
+                        if (y == yTiles - 1) sHeight() else (y + 1) * sTileHeight)
 
                     tile.vRect = Rect(0, 0, 0, 0)
                     tile.fileSRect = Rect(tile.sRect)
@@ -1488,10 +1489,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
 
     private fun sourceToViewRect(sRect: Rect, vTarget: Rect) {
         vTarget.set(
-                sourceToViewX(sRect.left.toFloat()).toInt(),
-                sourceToViewY(sRect.top.toFloat()).toInt(),
-                sourceToViewX(sRect.right.toFloat()).toInt(),
-                sourceToViewY(sRect.bottom.toFloat()).toInt()
+            sourceToViewX(sRect.left.toFloat()).toInt(),
+            sourceToViewY(sRect.top.toFloat()).toInt(),
+            sourceToViewX(sRect.right.toFloat()).toInt(),
+            sourceToViewY(sRect.bottom.toFloat()).toInt()
         )
     }
 
@@ -1647,8 +1648,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                 sCenterEnd = targetSCenter
                 vFocusStart = sourceToViewCoord(targetSCenter!!)
                 vFocusEnd = PointF(
-                        vxCenter.toFloat(),
-                        vyCenter.toFloat()
+                    vxCenter.toFloat(),
+                    vyCenter.toFloat()
                 )
                 time = System.currentTimeMillis()
             }
