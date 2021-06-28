@@ -39,7 +39,9 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         private const val ANIMATION_DURATION = 200L
         private const val FLING_DURATION = 300L
         private const val INSTANT_ANIMATION_DURATION = 10L
-        private val TWENTY_DEGREES = Math.toRadians(20.0)
+        private val FIFTEEN_DEGREES = Math.toRadians(15.0)
+        private val FIVE_DEGREES = Math.toRadians(5.0)
+        private val ZOOM_IN_THRESHOLD = 0.05f   // if the user zooms in a bit, do not allow rotating the image with the given gesture anymore
     }
 
     var maxScale = 2f
@@ -84,6 +86,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
     private var maxTouchCount = 0
     private var didZoomInGesture = false
     private var ignoreTouches = false
+    private var didRotateInGesture = false
+    private var preventRotatingInGesture = false
     private var prevDegrees = 0
 
     private var detector: GestureDetector? = null
@@ -250,7 +254,9 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
     private fun setGestureDetector(context: Context) {
         detector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-                if (isReady && vTranslate != null && !isZooming && e1 != null && e2 != null && (Math.abs(e1.x - e2.x) > 50 || Math.abs(e1.y - e2.y) > 50) && (Math.abs(velocityX) > 500 || Math.abs(velocityY) > 500)) {
+                if (isReady && vTranslate != null && !isZooming && e1 != null && e2 != null && (Math.abs(e1.x - e2.x) > 50 || Math.abs(e1.y - e2.y) > 50) &&
+                    (Math.abs(velocityX) > 500 || Math.abs(velocityY) > 500)
+                ) {
                     val vX = (velocityX * cos - velocityY * -sin).toFloat()
                     val vY = (velocityX * -sin + velocityY * cos).toFloat()
 
@@ -412,17 +418,25 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                 var consumed = false
                 if (maxTouchCount > 0) {
                     if (touchCount >= 2) {
-                        if (rotationEnabled) {
+                        if (rotationEnabled && !preventRotatingInGesture || didRotateInGesture) {
                             var angle = Math.atan2((event.getY(0) - event.getY(1)).toDouble(), (event.getX(0) - event.getX(1)).toDouble()).toFloat()
-                            if (Math.abs(lastAngle - angle.toDouble()) > TWENTY_DEGREES) {
+                            if (Math.abs(lastAngle - angle.toDouble()) > FIVE_DEGREES) {
+                                didRotateInGesture = true
+                            }
+
+                            if (Math.abs(lastAngle - angle.toDouble()) > FIFTEEN_DEGREES) {
                                 if (lastAngle - angle > 0) {
-                                    angle += TWENTY_DEGREES.toFloat()
+                                    angle += FIFTEEN_DEGREES.toFloat()
                                 } else {
-                                    angle -= TWENTY_DEGREES.toFloat()
+                                    angle -= FIFTEEN_DEGREES.toFloat()
                                 }
                                 setRotationInternal(imageRotation + angle - lastAngle)
                                 lastAngle = angle
                                 consumed = true
+                            }
+
+                            if (ZOOM_IN_THRESHOLD < Math.abs(scale - scaleStart)) {
+                                preventRotatingInGesture = true
                             }
                         }
 
@@ -559,6 +573,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                 }
 
                 didZoomInGesture = false
+                didRotateInGesture = false
+                preventRotatingInGesture = false
 
                 if (maxTouchCount > 0 && (isZooming || isPanning)) {
                     if (touchCount == 2) {
