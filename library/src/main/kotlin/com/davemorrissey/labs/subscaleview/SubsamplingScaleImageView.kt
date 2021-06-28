@@ -655,10 +655,14 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
             scaleElapsed = Math.min(scaleElapsed, anim!!.duration)
             scale = ease(anim!!.easing, scaleElapsed, anim!!.scaleStart, anim!!.scaleEnd - anim!!.scaleStart, anim!!.duration, anim!!.scaleEnd)
 
-            val vFocusNowX = ease(anim!!.easing, scaleElapsed, anim!!.vFocusStart!!.x, anim!!.vFocusEnd!!.x - anim!!.vFocusStart!!.x, anim!!.duration, anim!!.vFocusEnd!!.x)
-            val vFocusNowY = ease(anim!!.easing, scaleElapsed, anim!!.vFocusStart!!.y, anim!!.vFocusEnd!!.y - anim!!.vFocusStart!!.y, anim!!.duration, anim!!.vFocusEnd!!.y)
+            val focusStart = anim!!.vFocusStart!!
+            val focusEnd = anim!!.vFocusEnd!!
+            val vFocusNowX = ease(anim!!.easing, scaleElapsed, focusStart.x, focusEnd.x - focusStart.x, anim!!.duration, focusEnd.x)
+            val vFocusNowY = ease(anim!!.easing, scaleElapsed, focusStart.y, focusEnd.y - focusStart.y, anim!!.duration, focusEnd.y)
 
-            val easeValue = ease(anim!!.easing, scaleElapsed, anim!!.rotationStart, anim!!.rotationEnd - anim!!.rotationStart, anim!!.duration, anim!!.rotationEnd)
+            val rotationStart = anim!!.rotationStart
+            val rotationEnd = anim!!.rotationEnd
+            val easeValue = ease(anim!!.easing, scaleElapsed, rotationStart, rotationEnd - rotationStart, anim!!.duration, rotationEnd)
             setRotationInternal(easeValue)
 
             val animVCenterEnd = sourceToViewCoord(anim!!.sCenterEnd!!)
@@ -708,12 +712,21 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                             }
 
                             objectMatrix!!.reset()
-                            setMatrixArray(srcArray, 0f, 0f, tile.bitmap!!.width.toFloat(), 0f, tile.bitmap!!.width.toFloat(), tile.bitmap!!.height.toFloat(), 0f, tile.bitmap!!.height.toFloat())
+                            val bitmap = tile.bitmap!!
+                            val bitmapWidth = bitmap.width.toFloat()
+                            val bitmapHeight = bitmap.height.toFloat()
+                            setMatrixArray(srcArray, 0f, 0f, bitmapWidth, 0f, bitmapWidth, bitmapHeight, 0f, bitmapHeight)
+
+                            val rect = tile.vRect!!
+                            val left = rect.left.toFloat()
+                            val right = rect.right.toFloat()
+                            val bottom = rect.bottom.toFloat()
+                            val top = rect.top.toFloat()
                             when (getRequiredRotation()) {
-                                ORIENTATION_0 -> setMatrixArray(dstArray, tile.vRect!!.left.toFloat(), tile.vRect!!.top.toFloat(), tile.vRect!!.right.toFloat(), tile.vRect!!.top.toFloat(), tile.vRect!!.right.toFloat(), tile.vRect!!.bottom.toFloat(), tile.vRect!!.left.toFloat(), tile.vRect!!.bottom.toFloat())
-                                ORIENTATION_90 -> setMatrixArray(dstArray, tile.vRect!!.right.toFloat(), tile.vRect!!.top.toFloat(), tile.vRect!!.right.toFloat(), tile.vRect!!.bottom.toFloat(), tile.vRect!!.left.toFloat(), tile.vRect!!.bottom.toFloat(), tile.vRect!!.left.toFloat(), tile.vRect!!.top.toFloat())
-                                ORIENTATION_180 -> setMatrixArray(dstArray, tile.vRect!!.right.toFloat(), tile.vRect!!.bottom.toFloat(), tile.vRect!!.left.toFloat(), tile.vRect!!.bottom.toFloat(), tile.vRect!!.left.toFloat(), tile.vRect!!.top.toFloat(), tile.vRect!!.right.toFloat(), tile.vRect!!.top.toFloat())
-                                ORIENTATION_270 -> setMatrixArray(dstArray, tile.vRect!!.left.toFloat(), tile.vRect!!.bottom.toFloat(), tile.vRect!!.left.toFloat(), tile.vRect!!.top.toFloat(), tile.vRect!!.right.toFloat(), tile.vRect!!.top.toFloat(), tile.vRect!!.right.toFloat(), tile.vRect!!.bottom.toFloat())
+                                ORIENTATION_0 -> setMatrixArray(dstArray, left, top, right, top, right, bottom, left, bottom)
+                                ORIENTATION_90 -> setMatrixArray(dstArray, right, top, right, bottom, left, bottom, left, top)
+                                ORIENTATION_180 -> setMatrixArray(dstArray, right, bottom, left, bottom, left, top, right, top)
+                                ORIENTATION_270 -> setMatrixArray(dstArray, left, bottom, left, top, right, top, right, bottom)
                             }
                             objectMatrix!!.setPolyToPoly(srcArray, 0, dstArray, 0, 4)
                             objectMatrix!!.postRotate(Math.toDegrees(imageRotation.toDouble()).toFloat(), width / 2f, height / 2f)
@@ -725,7 +738,12 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                             canvas.drawText("LOADING", (tile.vRect!!.left + px(5)).toFloat(), (tile.vRect!!.top + px(35)).toFloat(), debugTextPaint!!)
                         }
                         if (tile.visible && debug) {
-                            canvas.drawText("ISS ${tile.sampleSize} RECT ${tile.sRect!!.top}, ${tile.sRect!!.left}, ${tile.sRect!!.bottom}, ${tile.sRect!!.right}", (tile.vRect!!.left + px(5)).toFloat(), (tile.vRect!!.top + px(15)).toFloat(), debugTextPaint!!)
+                            canvas.drawText(
+                                "ISS ${tile.sampleSize} RECT ${tile.sRect!!.top}, ${tile.sRect!!.left}, ${tile.sRect!!.bottom}, ${tile.sRect!!.right}",
+                                (tile.vRect!!.left + px(5)).toFloat(),
+                                (tile.vRect!!.top + px(15)).toFloat(),
+                                debugTextPaint!!
+                            )
                         }
                     }
                 }
@@ -760,11 +778,29 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         }
 
         if (debug) {
-            canvas.drawText("Scale: ${String.format(Locale.ENGLISH, "%.2f", scale)} (${String.format(Locale.ENGLISH, "%.2f", getFullScale())} - ${String.format(Locale.ENGLISH, "%.2f", maxScale)})", px(5).toFloat(), px(15).toFloat(), debugTextPaint!!)
-            canvas.drawText("Translate: ${String.format(Locale.ENGLISH, "%.2f", vTranslate!!.x)}:${String.format(Locale.ENGLISH, "%.2f", vTranslate!!.y)}", px(5).toFloat(), px(30).toFloat(), debugTextPaint!!)
+            canvas.drawText(
+                "Scale: ${String.format(Locale.ENGLISH, "%.2f", scale)} (${String.format(Locale.ENGLISH, "%.2f", getFullScale())} - ${
+                    String.format(
+                        Locale.ENGLISH,
+                        "%.2f",
+                        maxScale
+                    )
+                })", px(5).toFloat(), px(15).toFloat(), debugTextPaint!!
+            )
+            canvas.drawText(
+                "Translate: ${String.format(Locale.ENGLISH, "%.2f", vTranslate!!.x)}:${String.format(Locale.ENGLISH, "%.2f", vTranslate!!.y)}",
+                px(5).toFloat(),
+                px(30).toFloat(),
+                debugTextPaint!!
+            )
             val center = getCenter()
 
-            canvas.drawText("Source center: ${String.format(Locale.ENGLISH, "%.2f", center!!.x)}:${String.format(Locale.ENGLISH, "%.2f", center.y)}", px(5).toFloat(), px(45).toFloat(), debugTextPaint!!)
+            canvas.drawText(
+                "Source center: ${String.format(Locale.ENGLISH, "%.2f", center!!.x)}:${String.format(Locale.ENGLISH, "%.2f", center.y)}",
+                px(5).toFloat(),
+                px(45).toFloat(),
+                debugTextPaint!!
+            )
             if (anim != null) {
                 val vCenterStart = sourceToViewCoord(anim!!.sCenterStart!!)
                 val vCenterEndRequested = sourceToViewCoord(anim!!.sCenterEndRequested!!)
@@ -945,7 +981,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
             sourceToViewCoord(tile.sRect!!.left.toFloat(), tile.sRect!!.top.toFloat()),
             sourceToViewCoord(tile.sRect!!.right.toFloat(), tile.sRect!!.top.toFloat()),
             sourceToViewCoord(tile.sRect!!.right.toFloat(), tile.sRect!!.bottom.toFloat()),
-            sourceToViewCoord(tile.sRect!!.left.toFloat(), tile.sRect!!.bottom.toFloat()))
+            sourceToViewCoord(tile.sRect!!.left.toFloat(), tile.sRect!!.bottom.toFloat())
+        )
 
         for (pointF in corners) {
             if (pointF == null) {
@@ -1160,7 +1197,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                         x * sTileWidth,
                         y * sTileHeight,
                         if (x == xTiles - 1) sWidth() else (x + 1) * sTileWidth,
-                        if (y == yTiles - 1) sHeight() else (y + 1) * sTileHeight)
+                        if (y == yTiles - 1) sHeight() else (y + 1) * sTileHeight
+                    )
 
                     tile.vRect = Rect(0, 0, 0, 0)
                     tile.fileSRect = Rect(tile.sRect)
@@ -1176,7 +1214,12 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         }
     }
 
-    private class TilesInitTask internal constructor(view: SubsamplingScaleImageView, context: Context, decoderFactory: DecoderFactory<out ImageRegionDecoder>, private val source: Uri) : AsyncTask<Void, Void, IntArray>() {
+    private class TilesInitTask internal constructor(
+        view: SubsamplingScaleImageView,
+        context: Context,
+        decoderFactory: DecoderFactory<out ImageRegionDecoder>,
+        private val source: Uri
+    ) : AsyncTask<Void, Void, IntArray>() {
         private val viewRef = WeakReference(view)
         private val contextRef = WeakReference(context)
         private val decoderFactoryRef = WeakReference(decoderFactory)
@@ -1237,7 +1280,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         requestLayout()
     }
 
-    private class TileLoadTask internal constructor(view: SubsamplingScaleImageView, decoder: ImageRegionDecoder, tile: Tile) : AsyncTask<Void, Void, Bitmap>() {
+    private class TileLoadTask internal constructor(view: SubsamplingScaleImageView, decoder: ImageRegionDecoder, tile: Tile) :
+        AsyncTask<Void, Void, Bitmap>() {
         private val viewRef = WeakReference(view)
         private val decoderRef = WeakReference(decoder)
         private val tileRef = WeakReference(tile)
@@ -1304,7 +1348,12 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         invalidate()
     }
 
-    private class BitmapLoadTask internal constructor(view: SubsamplingScaleImageView, context: Context, decoderFactory: DecoderFactory<out ImageDecoder>, private val source: Uri) : AsyncTask<Void, Void, Int>() {
+    private class BitmapLoadTask internal constructor(
+        view: SubsamplingScaleImageView,
+        context: Context,
+        decoderFactory: DecoderFactory<out ImageDecoder>,
+        private val source: Uri
+    ) : AsyncTask<Void, Void, Int>() {
         private val viewRef = WeakReference(view)
         private val contextRef = WeakReference(context)
         private val decoderFactoryRef = WeakReference(decoderFactory)
@@ -1377,7 +1426,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         maxTileHeight = maxPixelsY
     }
 
-    private fun getMaxBitmapDimensions(canvas: Canvas) = Point(Math.min(canvas.maximumBitmapWidth, maxTileWidth), Math.min(canvas.maximumBitmapHeight, maxTileHeight))
+    private fun getMaxBitmapDimensions(canvas: Canvas) =
+        Point(Math.min(canvas.maximumBitmapWidth, maxTileWidth), Math.min(canvas.maximumBitmapHeight, maxTileHeight))
 
     private fun sWidth(): Int {
         val rotation = getRequiredRotation()
