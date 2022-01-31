@@ -82,6 +82,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
 
     private var isZooming = false
     private var isPanning = false
+    private var allFingersLifted = true
     private var isQuickScaling = false
     private var maxTouchCount = 0
     private var didZoomInGesture = false
@@ -395,6 +396,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         val touchCount = event.pointerCount
         when (event.action) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_1_DOWN, MotionEvent.ACTION_POINTER_2_DOWN -> {
+                allFingersLifted = true
                 anim = null
                 parent?.requestDisallowInterceptTouchEvent(true)
                 maxTouchCount = Math.max(maxTouchCount, touchCount)
@@ -417,7 +419,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
             MotionEvent.ACTION_MOVE -> {
                 var consumed = false
                 if (maxTouchCount > 0) {
-                    if (touchCount >= 2) {
+                    if (touchCount >= 2 && allFingersLifted) {
                         if (rotationEnabled && !preventRotatingInGesture || didRotateInGesture) {
                             var angle = Math.atan2((event.getY(0) - event.getY(1)).toDouble(), (event.getX(0) - event.getX(1)).toDouble()).toFloat()
                             if (Math.abs(lastAngle - angle.toDouble()) > FIVE_DEGREES) {
@@ -576,6 +578,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                 didRotateInGesture = false
                 preventRotatingInGesture = false
 
+                if (touchCount > 2) {
+                    allFingersLifted = false
+                }
+
                 if (maxTouchCount > 0 && (isZooming || isPanning)) {
                     if (touchCount == 2) {
                         animateToBounds()
@@ -598,6 +604,10 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                     isZooming = false
                     isPanning = false
                     maxTouchCount = 0
+                }
+
+                if (maxTouchCount > touchCount) {
+                    allFingersLifted = true
                 }
                 return true
             }
