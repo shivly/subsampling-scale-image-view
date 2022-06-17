@@ -1147,7 +1147,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
 
         if (scale >= fullScale) {
             val isZoomedIn = height < sHeight * scale && width < sWidth * scale
-            val center = viewToSourceCoord(PointF(width / 2f, height / 2f))!!
+            val center = viewToSourceCoord(PointF(width / 2f, height / 2f)) ?: return
             AnimationBuilder(center, rightAngle).apply {
                 duration = if (isZoomedIn || forceInstantRefresh) INSTANT_ANIMATION_DURATION else ANIMATION_DURATION
                 start()
