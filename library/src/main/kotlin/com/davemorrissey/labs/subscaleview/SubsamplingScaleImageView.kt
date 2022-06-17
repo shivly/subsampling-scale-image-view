@@ -1110,7 +1110,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         sat.scale = scale
     }
 
-    private fun fitToBounds() {
+    fun fitToBounds() {
         var init = false
         if (vTranslate == null) {
             init = true
