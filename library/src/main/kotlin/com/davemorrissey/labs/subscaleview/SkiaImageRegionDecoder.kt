@@ -26,7 +26,7 @@ class SkiaImageRegionDecoder : ImageRegionDecoder {
                 var inputStream: InputStream? = null
                 try {
                     val contentResolver = context.contentResolver
-                    inputStream = contentResolver.openInputStream(uri)
+                    inputStream = contentResolver.openInputStream(uri)!!
                     decoder = BitmapRegionDecoder.newInstance(inputStream, false)
                 } finally {
                     try {

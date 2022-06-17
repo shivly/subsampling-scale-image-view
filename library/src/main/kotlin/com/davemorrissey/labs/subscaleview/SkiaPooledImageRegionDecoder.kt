@@ -73,7 +73,7 @@ class SkiaPooledImageRegionDecoder : ImageRegionDecoder {
                 } catch (e: Exception) {
                 }
 
-                decoder = BitmapRegionDecoder.newInstance(context!!.assets.open(assetName, AssetManager.ACCESS_RANDOM), false)
+                decoder = BitmapRegionDecoder.newInstance(context!!.assets.open(assetName, AssetManager.ACCESS_RANDOM), false)!!
             }
             uriString.startsWith(FILE_SCHEME) -> {
                 decoder = BitmapRegionDecoder.newInstance(uriString.substring(FILE_SCHEME.length), false)
@@ -89,8 +89,8 @@ class SkiaPooledImageRegionDecoder : ImageRegionDecoder {
                 var inputStream: InputStream? = null
                 try {
                     val contentResolver = context!!.contentResolver
-                    inputStream = contentResolver.openInputStream(uri!!)
-                    decoder = BitmapRegionDecoder.newInstance(inputStream, false)
+                    inputStream = contentResolver.openInputStream(uri!!)!!
+                    decoder = BitmapRegionDecoder.newInstance(inputStream, false)!!
                     try {
                         val descriptor = contentResolver.openAssetFileDescriptor(uri!!, "r")
                         if (descriptor != null) {

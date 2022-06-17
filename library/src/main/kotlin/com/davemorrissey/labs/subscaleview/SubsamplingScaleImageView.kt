@@ -388,7 +388,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
             vCenterStartNow = PointF(0f, 0f)
         }
 
-        vTranslateBefore!!.set(vTranslate)
+        vTranslateBefore!!.set(vTranslate!!)
         return onTouchEventInternal(event) || super.onTouchEvent(event)
     }
 
@@ -467,7 +467,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
 
                             if (previousScale * sHeight() < height && scale * sHeight() >= height || previousScale * sWidth() < width && scale * sWidth() >= width) {
                                 vCenterStart!!.set(vCenterEndX, vCenterEndY)
-                                vTranslateStart!!.set(vTranslate)
+                                vTranslateStart!!.set(vTranslate!!)
                                 scaleStart = scale
                                 vDistStart = vDistEnd
                             }
@@ -503,8 +503,8 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                             vTranslate!!.x = vCenterStart!!.x - vLeftNow
                             vTranslate!!.y = vCenterStart!!.y - vTopNow
                             if (previousScale * sHeight() < height && scale * sHeight() >= height || previousScale * sWidth() < width && scale * sWidth() >= width) {
-                                vCenterStart!!.set(sourceToViewCoord(quickScaleSCenter!!))
-                                vTranslateStart!!.set(vTranslate)
+                                vCenterStart!!.set(sourceToViewCoord(quickScaleSCenter!!)!!)
+                                vTranslateStart!!.set(vTranslate!!)
                                 scaleStart = scale
                                 dist = 0f
                             }
@@ -658,7 +658,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
             if (vTranslateBefore == null) {
                 vTranslateBefore = PointF(0f, 0f)
             }
-            vTranslateBefore!!.set(vTranslate)
+            vTranslateBefore!!.set(vTranslate!!)
 
             var scaleElapsed = System.currentTimeMillis() - anim!!.time
             val finished = scaleElapsed > anim!!.duration
@@ -1122,7 +1122,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         }
 
         satTemp!!.scale = scale
-        satTemp!!.vTranslate.set(vTranslate)
+        satTemp!!.vTranslate.set(vTranslate!!)
         satTemp!!.rotate = imageRotation
         fitToBounds(satTemp!!)
         scale = satTemp!!.scale
@@ -1459,7 +1459,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
 
     private fun fileSRect(sRect: Rect?, target: Rect?) {
         when (getRequiredRotation()) {
-            0 -> target!!.set(sRect)
+            0 -> target!!.set(sRect!!)
             90 -> target!!.set(sRect!!.top, sHeight - sRect.right, sRect.bottom, sHeight - sRect.left)
             180 -> target!!.set(sWidth - sRect!!.right, sHeight - sRect.bottom, sWidth - sRect.left, sHeight - sRect.top)
             else -> target!!.set(sWidth - sRect!!.bottom, sRect.left, sWidth - sRect.top, sRect.right)
