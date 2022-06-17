@@ -6,7 +6,7 @@ android {
     compileSdkVersion 31
 
     defaultConfig {
-        minSdkVersion 22
+        minSdkVersion 21
         applicationId "com.davemorrissey.labs.subscaleview.test"
         versionCode 4
         versionName "3.1.0"
