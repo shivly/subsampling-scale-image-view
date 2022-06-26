@@ -350,6 +350,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
             ignoreTouches = true
             parent?.requestDisallowInterceptTouchEvent(true)
             if (event.action == MotionEvent.ACTION_UP || event.action == MotionEvent.ACTION_CANCEL) {
+                onImageEventListener?.onUpEvent()
                 ignoreTouches = false
             }
 
@@ -359,6 +360,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         }
 
         if (event.action == MotionEvent.ACTION_UP || event.action == MotionEvent.ACTION_CANCEL) {
+            onImageEventListener?.onUpEvent()
             ignoreTouches = false
         }
 
@@ -1775,5 +1777,6 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         fun onReady()
         fun onImageLoadError(e: Exception)
         fun onImageRotation(degrees: Int)
+        fun onUpEvent()
     }
 }
