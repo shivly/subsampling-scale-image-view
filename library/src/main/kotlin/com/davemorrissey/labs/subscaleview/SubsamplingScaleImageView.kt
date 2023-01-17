@@ -253,9 +253,18 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
     }
 
     private fun setGestureDetector(context: Context) {
-        detector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
+        detector = GestureDetector(context, object : GestureDetectorListener() {
+            override fun onDown(e: MotionEvent): Boolean {
+                // we have to return true here so ACTION_UP (and onFling) can be dispatched
+                return true
+            }
+
             override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-                if (isReady && vTranslate != null && !isZooming && e1 != null && e2 != null && (abs(e1.x - e2.x) > 50 || abs(e1.y - e2.y) > 50) &&
+                if (e1 == null || e2 == null) {
+                    return true
+                }
+
+                if (isReady && vTranslate != null && !isZooming && (abs(e1.x - e2.x) > 50 || abs(e1.y - e2.y) > 50) &&
                     (abs(velocityX) > 500 || abs(velocityY) > 500)
                 ) {
                     val vX = (velocityX * cos - velocityY * -sin).toFloat()
