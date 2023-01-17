@@ -40,7 +40,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
         private const val ANIMATION_DURATION = 200L
         private const val FLING_DURATION = 300L
         private const val INSTANT_ANIMATION_DURATION = 10L
-        private val TEN_DEGREES = Math.toRadians(10.0)
+        private val ROTATION_THRESHOLD = Math.toRadians(10.0)
         private val ZOOM_IN_THRESHOLD = 0.05f   // if the user zooms in a bit, do not allow rotating the image with the given gesture anymore
     }
 
@@ -425,7 +425,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                         if (rotationEnabled && !preventRotatingInGesture || didRotateInGesture) {
                             val angle = atan2((event.getY(0) - event.getY(1)).toDouble(), (event.getX(0) - event.getX(1)).toDouble())
                             val changeInAngle = abs(lastAngle - angle)
-                            if (changeInAngle > TEN_DEGREES) {
+                            if (changeInAngle > ROTATION_THRESHOLD) {
                                 lastAngle = angle
                                 didRotateInGesture = true
                             } else if (didRotateInGesture) {
