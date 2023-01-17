@@ -48,7 +48,7 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
     var isOneToOneZoomEnabled = false
     var rotationEnabled = true
     var eagerLoadingEnabled = false
-    var debug = true
+    var debug = false
     var onImageEventListener: OnImageEventListener? = null
     var doubleTapZoomScale = 1f
     var bitmapDecoderFactory: DecoderFactory<out ImageDecoder> = CompatDecoderFactory(SkiaImageDecoder::class.java)
