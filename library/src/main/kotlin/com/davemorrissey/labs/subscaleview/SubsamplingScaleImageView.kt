@@ -547,9 +547,11 @@ open class SubsamplingScaleImageView @JvmOverloads constructor(context: Context,
                             val atYEdge = if (rightAngle == 90.0 || rightAngle == 270.0) lastX != vTranslate!!.x else lastY != vTranslate!!.y
                             val edgeXSwipe = atXEdge && dxA > dyA && !isPanning
                             val edgeYSwipe = atYEdge && dyA > dxA && !isPanning
-                            if (!edgeXSwipe && !edgeYSwipe && (!atXEdge || !atYEdge || isPanning)) {
+                            // disable panning and allow swiping when the image is too small to fit the view bounds
+                            val lowRes = height > sHeight * scale && width > sWidth * scale
+                            if (!edgeXSwipe && !edgeYSwipe && (!atXEdge || !atYEdge || isPanning) && !lowRes) {
                                 isPanning = true
-                            } else if ((dxA > offset && atXEdge && dxA > dyA) || (dyA > offset && atYEdge && dyA > dxA)) {
+                            } else if (lowRes || (dxA > offset && atXEdge && dxA > dyA) || (dyA > offset && atYEdge && dyA > dxA)) {
                                 maxTouchCount = 0
                                 parent?.requestDisallowInterceptTouchEvent(false)
                             }
